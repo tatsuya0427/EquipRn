@@ -55,6 +55,8 @@ public abstract class ActionUI : MonoBehaviour{
 
     abstract public void Remove();
 
+    abstract public void ActionsUpdate();
+
     abstract public void PushUp(bool inputGetButtonDown);
 
     abstract public void PushDown(bool inputGetButtonDown);

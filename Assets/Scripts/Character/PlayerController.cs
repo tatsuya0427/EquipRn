@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour{
 
+	[SerializeField]protected GameObject mainGameSceneManager;
+
 	[SerializeField]protected int maxHP = 1;
 	[SerializeField]protected float defaultSpeed = 0;
 	
@@ -25,6 +27,10 @@ public class PlayerController : MonoBehaviour{
 	//[SerializeField]protected string jumpKeyName = "Jump";
 	[SerializeField]protected float jumpPower = 10.0f;
 	[SerializeField]protected float secondJumpPower = 10.0f;
+
+	[SerializeField]int canJumpCount = 2;//地面についてからジャンプできる最大回数
+	[SerializeField]bool isGround = false;
+	[SerializeField]int remJumpCount = 0;//残り何回ジャンプできるか
 	//--------------------
 
 	
@@ -36,12 +42,7 @@ public class PlayerController : MonoBehaviour{
 	private float axisH;
 	//--------------------
 
-
-	[SerializeField]int canJumpCount = 2;//地面についてからジャンプできる最大回数
-	[SerializeField]bool isGround = false;
-	[SerializeField]int remJumpCount = 0;//残り何回ジャンプできるか
-
-	protected int hp = 0;
+	protected int hp = 1;
 	protected float speed = 0;
 	protected int power = 0;
 
@@ -55,9 +56,8 @@ public class PlayerController : MonoBehaviour{
 	protected float damageFlash;//被弾時の点滅処理で使用するalpha値
 	//--------------------
 
+	[SerializeField]GameObject SceneManager;//シーンの操作を行うObjectを格納しておく変数
 
-	// protected GameObject gameManagerObj;
-	// protected GameManager gameManager;
 	protected Animator anim;
 	protected SpriteRenderer srender;
 	protected Rigidbody2D rbody;
@@ -65,7 +65,6 @@ public class PlayerController : MonoBehaviour{
 	public int EditHp{
 		set{
 			hp = Mathf.Clamp(hp - value, 0, maxHP);
-
 			if(hp <= 0){
 				Dead();
 			}
@@ -185,7 +184,6 @@ public class PlayerController : MonoBehaviour{
 		srender = GetComponent<SpriteRenderer>();
 		Debug.Log(srender);
 		rbody = GetComponent<Rigidbody2D>();
-		Debug.Log("hogehoge");
 
 		//Damage();
 
@@ -197,69 +195,72 @@ public class PlayerController : MonoBehaviour{
 	}
 
     protected virtual void Update(){
-        GetInput();
-		DamageTimer();
-		DamageAnimation();
+        //GetInput();
 		//UpdateAnimation();
+		DamageTimer();
     }
 
 	protected virtual void FixedUpdate(){
 		FixedUpdateCharacter();
+		DamageAnimation();
+		if(this.nowSetAction != null){
+			this.nowSetAction.ActionsUpdate();
+		}
 	}
 
 	protected virtual void FixedUpdateCharacter(){
 		Move();
 	}
 
-	void GetInput(){
-		if(!isActive){
-			return;
-		}
+	// void GetInput(){
+	// 	if(!isActive){
+	// 		return;
+	// 	}
 
-		// this.nowPushJumpKey = Input.GetButtonDown(GetJumpKeyName);
-		// this.axisH = Input.GetAxisRaw("Horizontal");
-		// this.axisV = Input.GetAxisRaw("Vertical");
+	// 	// this.nowPushJumpKey = Input.GetButtonDown(GetJumpKeyName);
+	// 	// this.axisH = Input.GetAxisRaw("Horizontal");
+	// 	// this.axisV = Input.GetAxisRaw("Vertical");
 
-		// if(this.nowPushJumpKey){
+	// 	// if(this.nowPushJumpKey){
 			
-		// }
+	// 	// }
 
 
-		// this.nowPushUpKey = GetInput.GetButtonDown();
+	// 	// this.nowPushUpKey = GetInput.GetButtonDown();
 
-		// if()
+	// 	// if()
 
-		//-------------
-		// nowPushJumpKey = Input.GetButtonDown(jumpKeyName);
-		// if(nowPushJumpKey){
-		// 	if(keepPushJumpKey == false){
-		// 		keepPushJumpKey = true;
-		// 		remJumpCount --;
-		// 		//Debug.Log("hoge");
-		// 	}
-		// }else{
-		// 	keepPushJumpKey = false;
-		// }
-		//-------------
+	// 	//-------------
+	// 	// nowPushJumpKey = Input.GetButtonDown(jumpKeyName);
+	// 	// if(nowPushJumpKey){
+	// 	// 	if(keepPushJumpKey == false){
+	// 	// 		keepPushJumpKey = true;
+	// 	// 		remJumpCount --;
+	// 	// 		//Debug.Log("hoge");
+	// 	// 	}
+	// 	// }else{
+	// 	// 	keepPushJumpKey = false;
+	// 	// }
+	// 	//-------------
 	
-		// nowPushSpace = Input.GetButtonDown(jumpButtonName);
-		// if(nowPushSpace){
-		// 	if(pushSpaceKeyFlag == false){
-		// 		pushSpaceKeyFlag = true;
-		// 	}
-		// }else{
-		// 	pushSpaceKeyFlag = false;
-		// }
+	// 	// nowPushSpace = Input.GetButtonDown(jumpButtonName);
+	// 	// if(nowPushSpace){
+	// 	// 	if(pushSpaceKeyFlag == false){
+	// 	// 		pushSpaceKeyFlag = true;
+	// 	// 	}
+	// 	// }else{
+	// 	// 	pushSpaceKeyFlag = false;
+	// 	// }
 
-		// axisH = Input.GetAxisRaw("Horizontal");
-        // if(axisH > 0){
-        //     transform.localScale = new Vector3(-0.4f, 0.4f, 1.0f);
-        // }else if(axisH < 0){
-        //     transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
-        // }
+	// 	// axisH = Input.GetAxisRaw("Horizontal");
+    //     // if(axisH > 0){
+    //     //     transform.localScale = new Vector3(-0.4f, 0.4f, 1.0f);
+    //     // }else if(axisH < 0){
+    //     //     transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
+    //     // }
 
 
-	}
+	// }
 
 	public void InputUp(bool inputGetButtonDown){
 		if(!isActive || notMoveFlag){
@@ -297,9 +298,9 @@ public class PlayerController : MonoBehaviour{
 	}
 
 	protected virtual void InitCharacter(){
-		EditHp = maxHP;
+		this.hp = maxHP;
 		EditSpeed = defaultSpeed;
-
+		Debug.Log("active");
 		isActive = true;
 	}
 
@@ -335,34 +336,53 @@ public class PlayerController : MonoBehaviour{
 
 	protected void OnCollisionEnter2D(Collision2D collision){
 		if(collision.gameObject.CompareTag("enemy")){
-			Damage(collision.collider.transform.position.x);
+			Damage(collision.collider.transform.position);
+			this.EditAxisH = 0;
 		}
 	}
 
-	protected virtual void Damage(float positionX){
+	protected virtual void Damage(Vector3 damagePos){
 		if(this.damageFlag){
 			return;
 		}
 
-		EditHp = (EditHp - 1);
+		EditHp = 1;
 		damageFlag = true;
 		notMoveFlag = true;
 
 
-		Vector2 forced;
-        if(transform.position.x < positionX){//敵がplayerからみて前方、後方どちらから攻撃してきたか判別し、playerが攻撃された方とは逆向きに吹っ飛ばす処理
-            //forced = Vector2.left;
+		// Vector2 damageForced;
+        // if(transform.position.x < positionX){//敵がplayerからみて前方、後方どちらから攻撃してきたか判別し、playerが攻撃された方とは逆向きに吹っ飛ばす処理
+        //     //forced = Vector2.left;
 			
-			this.rbody.AddForce(transform.up * 400.0f);
-			this.rbody.AddForce(transform.right * -400.0f);
+		// 	//this.rbody.AddForce(transform.up * 600.0f);
+		// 	damageForced = new Vector2(-30.0f, 10.0f);
+		// 	//this.rbody.AddForce(transform.right * -600.0f);
+		// 	this.rbody.AddForce(damageForced, ForceMode2D.Impulse);
 
-        }else{
-            //forced = Vector2.right;
-			this.rbody.AddForce(transform.right * 400.0f);
-			this.rbody.AddForce(transform.up * 400.0f);
-        }
+        // }else{
+        //     //forced = Vector2.right;
+		// 	//this.rbody.AddForce(transform.right * 600.0f);
+		// 	//this.rbody.AddForce(transform.up * 600.0f);
+		// 	damageForced = new Vector2(30.0f, 10.0f);
+		// 	this.rbody.AddForce(damageForced, ForceMode2D.Impulse);
+
+        // }
         //this.rbody.velocity = forced * 300;
 		//this.rbody.velocity = Vector2.up * 50;
+
+		Vector2 damageForce = new Vector2(15f, 10f);
+		Vector2 distination = (transform.position - damagePos).normalized;
+		if(distination.x < 0)
+		{
+			damageForce.x *= -1f;
+		}
+		// distination.x *= 20f;
+		// distination.y *= 30f;
+		this.rbody.AddForce(damageForce, ForceMode2D.Impulse);
+		// this.rbody.AddForce(transform.right * distination.x, ForceMode2D.Impulse);
+		// this.rbody.AddForce(transform.up * distination.y, ForceMode2D.Impulse);
+		//transform.Translate(distination.x * 5, distination.y * 5, 0);
 
 		if(EditHp > 0){
 			this.nowDamageCoolTime = 0;
@@ -386,6 +406,14 @@ public class PlayerController : MonoBehaviour{
 
 	protected virtual void Dead(){
 		Debug.Log("Dead!!!!!!");
+		if(this.mainGameSceneManager != null)
+		{
+			this.mainGameSceneManager.GetComponent<MainGameSceneManager>().EditPlayerLive = false;
+		}
+		else
+		{
+			Debug.Log("not set MainGameSceneManager");
+		}
 	}
 
 	void UpdateAnimation(){

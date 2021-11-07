@@ -13,8 +13,9 @@ public class SwordAction : ActionUI{
     protected SpriteRenderer slashRender;
     private Vector3 targetPos;//今のtargetがどこにいるか保持しておく変数
     private Vector3 arrowVec;//arrowが放たれる方角を保持しておく変数
-    private bool canSlash = true;//現在arrowが打てるかどうか
+    private bool canSlash = true;//現在slashが打てるかどうか
     private float nowDelayTime = 0f;//現在のdelay経過時間を保持しておく
+    private bool nowDelay = false;//現在slashにDelayがかかっているかどうかを保持しておく
 
 
     //------------------------
@@ -27,11 +28,12 @@ public class SwordAction : ActionUI{
     [SerializeField]protected float slashJudgment = 0f;//slashの猶予期間
 
 
-    void Start(){
-        SetState("sword", false, false, true, true, true);
-    }
+    // void Start(){
+    //     SetState("sword", false, false, true, true, true);
+    // }
 
     public override void PlayerSet(GameObject player){
+        SetState("sword", false, false, true, true, true);
         this.playerComp = player.GetComponent<PlayerController>();
         this.playerObject = player;
 
@@ -53,12 +55,13 @@ public class SwordAction : ActionUI{
         }
     }
 
-    void Update(){
+    public override void ActionsUpdate(){
         if(this.nowSet){
 
             if(!this.canSlash){
                 if(this.nowDelayTime >= this.slashDelay){
                     this.canSlash = true;
+                    this.nowDelay = false;
                     Debug.Log("can");
                 }else if(this.nowDelayTime >= this.slashJudgment){
                     this.slashRender.color = new Color(1f,1f,1f,0f);
@@ -88,29 +91,27 @@ public class SwordAction : ActionUI{
 
     public override void PushUp(bool inputGetButtonDown){
         if(inputGetButtonDown){
+            
         }
     }
 
     public override void PushDown(bool inputGetButtonDown){
         if(inputGetButtonDown){
+            
         }
     }
 
     public override void PushLeft(bool inputGetButtonDown){
-        if(inputGetButtonDown){
-            if(!this.canSlash){
-                playerObject.transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
-                this.playerComp.EditAxisH = -1;
-            }
+        if(inputGetButtonDown && !nowDelay){
+            playerObject.transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
+            this.playerComp.EditAxisH = -1;
         }
     }
 
     public override void PushRight(bool inputGetButtonDown){
-        if(inputGetButtonDown){
-            if(!this.canSlash){
-                playerObject.transform.localScale = new Vector3(-0.4f, 0.4f, 1.0f);
-                this.playerComp.EditAxisH = 1;
-            }
+        if(inputGetButtonDown && !nowDelay){
+            playerObject.transform.localScale = new Vector3(-0.4f, 0.4f, 1.0f);
+            this.playerComp.EditAxisH = 1;
         }
     }
 
@@ -121,6 +122,7 @@ public class SwordAction : ActionUI{
             if(this.canSlash){
                 this.slashRender.color = new Color(1f,1f,1f,1f);
                 this.nowDelayTime = 0;
+                this.nowDelay = true;
                 this.canSlash = false;
             }
         }

@@ -20,6 +20,11 @@ public class nonAction : ActionUI{
         
     }
 
+    public override void ActionsUpdate()
+    {
+        
+    }
+
     public override void PushUp(bool inputGetButtonDown){
         
     }
