@@ -7,21 +7,25 @@ public class WalkAction : ActionUI{
 
     private PlayerController playerComp;
     private GameObject playerObject;
-    void Start(){
-        SetState("walk", false, false, true, true, true);
-    }
+    // void Start(){
+    //     SetState("walk", false, false, true, true, true);
+    // }
 
     private bool keepPushJumpKey = false;
 
     private int remJumpCount = 0;
 
     public override void PlayerSet(GameObject player){
-        //SetState("walk", false, false, true, true, true);
+        SetState("walk", false, false, true, true, true);
         this.playerComp = player.GetComponent<PlayerController>();
         this.playerObject = player;
     }
 
     public override void Remove(){
+        
+    }
+
+    public override void ActionsUpdate(){
         
     }
 

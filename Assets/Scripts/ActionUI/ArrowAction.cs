@@ -29,16 +29,17 @@ public class ArrowAction : ActionUI{
     [SerializeField]protected float shotDelay = 0f;//arrowを打った後に再度打てるようになるまでの感覚
 
 
-    void Start(){
-        SetState("arrow", true, true, true, true, true);
-    }
+    // void Start(){
+    //     SetState("arrow", true, true, true, true, true);
+    // }
 
     public override void PlayerSet(GameObject player){
-        //SetState("arrow", true, true, true, true, true);
+        SetState("arrow", true, true, true, true, true);
         this.playerComp = player.GetComponent<PlayerController>();
         this.playerObject = player;
 
         this.moveTarget = Instantiate(this.targetOrigin, this.playerObject.transform.position, Quaternion.identity);
+        Debug.Log(this.moveTarget);
 
         this.nowSet = true;
         if(this.nowSet){
@@ -62,7 +63,7 @@ public class ArrowAction : ActionUI{
         }
     }
 
-    void Update(){
+    public override void ActionsUpdate(){
         if(this.nowSet){
 
             if(!this.canShot){

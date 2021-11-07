@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class InputManager : MonoBehaviour{
 
-    [SerializeField]protected GameObject firstSetAction;//ActionUIの初期装備
     [SerializeField]protected GameObject player;//playerを格納して、PlayerControllerを扱う。
     [SerializeField]protected string jumpKeyName = "Jump";//JumpKeyにて使用するキーの名称(Jumpならスペースキー)
     //[SerializeField]protected List<GameObject> actions = new List<GameObject>();
@@ -52,9 +51,23 @@ public class InputManager : MonoBehaviour{
     private bool CanUseJumpKey = false;
     //-----------------
 
+    private bool canPlayerControl = false;
+    public bool EditCanPlayerControl
+    {
+        set
+        {
+            this.canPlayerControl = value;
+        }
+        get
+        {
+            return this.canPlayerControl;
+        }
+    }
+
     void Start(){
         //this.actionUIComp = this.actions[0].GetCompomemt<ActionUI>();
         this.refActionNomber = 0;
+        this.canPlayerControl = false;
         //CreateAction();
         for(int i = 0; i < this.actions.Count; i++){
             Debug.Log(this.actions[i].GetName());
@@ -62,7 +75,6 @@ public class InputManager : MonoBehaviour{
         //-----------------
         //最初に装備しているActionUIのsetPlayerの実行と、このActionUIに設定されているCanUse(...)Keyの設定を取得する
         this.playerComp = player.GetComponent<PlayerController>();
-        //this.actionUIComp = firstSetAction.GetComponent<ActionUI>();
         this.actionUIComp = this.actions[this.refActionNomber];
 
         this.actionUIComp.PlayerSet(player);
@@ -119,86 +131,88 @@ public class InputManager : MonoBehaviour{
     }
 
     void Update(){
-        if(this.CanUseRightKey || this.CanUseLeftKey){
-            this.axisH = Input.GetAxisRaw("Horizontal");
+        if(this.canPlayerControl){
+            if(this.CanUseRightKey || this.CanUseLeftKey){
+                this.axisH = Input.GetAxisRaw("Horizontal");
 
-            //playerComp.EditAxisH = this.axisH;
+                //playerComp.EditAxisH = this.axisH;
 
-            if(this.axisH > 0 && this.CanUseRightKey){
-                this.playerComp.InputRight(true);
-                this.playerComp.InputLeft(false);
+                if(this.axisH > 0 && this.CanUseRightKey){
+                    this.playerComp.InputRight(true);
+                    this.playerComp.InputLeft(false);
 
-                this.buttonRightComp.PushKey(true);
-                this.buttonLeftComp.PushKey(false);
+                    this.buttonRightComp.PushKey(true);
+                    this.buttonLeftComp.PushKey(false);
 
-            }else if(this.axisH < 0 && this.CanUseLeftKey){
-                this.playerComp.InputRight(false);
-                this.playerComp.InputLeft(true);
+                }else if(this.axisH < 0 && this.CanUseLeftKey){
+                    this.playerComp.InputRight(false);
+                    this.playerComp.InputLeft(true);
 
-                this.buttonRightComp.PushKey(false);
-                this.buttonLeftComp.PushKey(true);
+                    this.buttonRightComp.PushKey(false);
+                    this.buttonLeftComp.PushKey(true);
 
-            }else{
-                this.playerComp.InputRight(false);
-                this.playerComp.InputLeft(false);
+                }else{
+                    this.playerComp.InputRight(false);
+                    this.playerComp.InputLeft(false);
 
-                this.buttonRightComp.PushKey(false);
-                this.buttonLeftComp.PushKey(false);
+                    this.buttonRightComp.PushKey(false);
+                    this.buttonLeftComp.PushKey(false);
 
-                playerComp.EditAxisH = this.axisH;
-                
+                    playerComp.EditAxisH = this.axisH;
+                    
+                }
             }
-        }
 
-        if(this.CanUseUpKey || this.CanUseDownKey){
-            this.axisV = Input.GetAxisRaw("Vertical");
-            //playerComp.EditAxisV = this.axisV;
+            if(this.CanUseUpKey || this.CanUseDownKey){
+                this.axisV = Input.GetAxisRaw("Vertical");
+                //playerComp.EditAxisV = this.axisV;
 
-            if(this.axisV > 0 && this.CanUseUpKey){
-                this.playerComp.InputUp(true);
-                this.playerComp.InputDown(false);
+                if(this.axisV > 0 && this.CanUseUpKey){
+                    this.playerComp.InputUp(true);
+                    this.playerComp.InputDown(false);
 
-                this.buttonUpComp.PushKey(true);
-                this.buttonDownComp.PushKey(false);
+                    this.buttonUpComp.PushKey(true);
+                    this.buttonDownComp.PushKey(false);
 
-            }else if(this.axisV < 0 && this.CanUseDownKey){
-                this.playerComp.InputUp(false);
-                this.playerComp.InputDown(true);
+                }else if(this.axisV < 0 && this.CanUseDownKey){
+                    this.playerComp.InputUp(false);
+                    this.playerComp.InputDown(true);
 
-                this.buttonUpComp.PushKey(false);
-                this.buttonDownComp.PushKey(true);
+                    this.buttonUpComp.PushKey(false);
+                    this.buttonDownComp.PushKey(true);
 
-            }else{
-                this.playerComp.InputUp(false);
-                this.playerComp.InputDown(false);
+                }else{
+                    this.playerComp.InputUp(false);
+                    this.playerComp.InputDown(false);
 
-                this.buttonUpComp.PushKey(false);
-                this.buttonDownComp.PushKey(false);
+                    this.buttonUpComp.PushKey(false);
+                    this.buttonDownComp.PushKey(false);
 
-                playerComp.EditAxisV = this.axisV;
+                    playerComp.EditAxisV = this.axisV;
+                }
             }
-        }
 
-        if(this.CanUseJumpKey){
-            this.playerComp.InputJump(Input.GetButtonDown(jumpKeyName));
-            this.buttonJumpComp.PushKey(Input.GetButton(jumpKeyName));
-        }
+            if(this.CanUseJumpKey){
+                this.playerComp.InputJump(Input.GetButtonDown(jumpKeyName));
+                this.buttonJumpComp.PushKey(Input.GetButton(jumpKeyName));
+            }
 
-        if(Input.GetKeyDown(KeyCode.C)){
-            // Debug.Log("this.refActionNomber" + this.refActionNomber);
-            // Debug.Log("actions.Count" + actions.Count);s
+            if(Input.GetKeyDown(KeyCode.C)){
+                // Debug.Log("this.refActionNomber" + this.refActionNomber);
+                // Debug.Log("actions.Count" + actions.Count);s
 
-            if(this.refActionNomber + 1 < actions.Count){
-                this.refActionNomber ++;
-                Debug.Log("next:" + this.refActionNomber);
-                //Debug.Log(actions[this.refActionNomber].GetName());
-                SetAction(actions[this.refActionNomber]);
+                if(this.refActionNomber + 1 < actions.Count){
+                    this.refActionNomber ++;
+                    Debug.Log("next:" + this.refActionNomber);
+                    //Debug.Log(actions[this.refActionNomber].GetName());
+                    SetAction(actions[this.refActionNomber]);
 
-            }else{
-                Debug.Log("return");
-                //Debug.Log(actions[this.refActionNomber].GetName());
-                SetAction(actions[0]);
-                this.refActionNomber = 0;
+                }else{
+                    Debug.Log("return");
+                    //Debug.Log(actions[this.refActionNomber].GetName());
+                    SetAction(actions[0]);
+                    this.refActionNomber = 0;
+                }
             }
         }
     }
