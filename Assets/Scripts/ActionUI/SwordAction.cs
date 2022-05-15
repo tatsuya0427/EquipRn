@@ -9,37 +9,23 @@ public class SwordAction : ActionUI{
     private GameObject playerObject;
 
     private bool nowSet = false;//現在このActionが装備されているかどうか判定する変数
-    private GameObject moveSlash;//方向キーを押した際にターゲットを移動させるObjectを格納
-    protected SpriteRenderer slashRender;
     private Vector3 targetPos;//今のtargetがどこにいるか保持しておく変数
-    private Vector3 arrowVec;//arrowが放たれる方角を保持しておく変数
     private bool canSlash = true;//現在slashが打てるかどうか
     private float nowDelayTime = 0f;//現在のdelay経過時間を保持しておく
     private bool nowDelay = false;//現在slashにDelayがかかっているかどうかを保持しておく
-
 
     //------------------------
     private int targetAxisH = 0;//targetがplayerからx軸方向にずれている値を保持する変数
     //------------------------
 
-    [SerializeField]protected GameObject targetOrigin;//targetを生成する時元となるObjectを格納
     [SerializeField]protected GameObject slashOrigin;//targetを生成する時元となるObjectを格納
     [SerializeField]protected float slashDelay = 0f;//slashを打った後に再度打てるようになるまでの感覚
     [SerializeField]protected float slashJudgment = 0f;//slashの猶予期間
-
-
-    // void Start(){
-    //     SetState("sword", false, false, true, true, true);
-    // }
 
     public override void PlayerSet(GameObject player){
         SetState("sword", false, false, true, true, true);
         this.playerComp = player.GetComponent<PlayerController>();
         this.playerObject = player;
-
-        this.moveSlash = Instantiate(this.slashOrigin, this.playerObject.transform.position, Quaternion.identity);
-        this.slashRender = this.moveSlash.GetComponent<SpriteRenderer>();
-        this.slashRender.color = new Color(1f,1f,1f,0f);
 
         this.nowSet = true;
         if(this.nowSet){
@@ -51,7 +37,6 @@ public class SwordAction : ActionUI{
             }
 
             this.targetPos = new Vector3(this.targetPos.x + this.targetAxisH, this.targetPos.y, this.targetPos.z);
-            this.moveSlash.transform.position = this.targetPos;
         }
     }
 
@@ -64,7 +49,6 @@ public class SwordAction : ActionUI{
                     this.nowDelay = false;
                     Debug.Log("can");
                 }else if(this.nowDelayTime >= this.slashJudgment){
-                    this.slashRender.color = new Color(1f,1f,1f,0f);
                     Debug.Log("stopJudge");
                     this.nowDelayTime += Time.deltaTime;
                 }else{
@@ -80,13 +64,10 @@ public class SwordAction : ActionUI{
             }
 
             this.targetPos = new Vector3(this.targetPos.x + this.targetAxisH, this.targetPos.y, this.targetPos.z);
-            this.moveSlash.transform.position = this.targetPos;
         }
     }
 
     public override void Remove(){
-        Destroy(this.moveSlash);
-        this.nowSet = false;
     }
 
     public override void PushUp(bool inputGetButtonDown){
@@ -120,7 +101,7 @@ public class SwordAction : ActionUI{
     public override void PushJump(bool inputGetButtonDown){
         if(inputGetButtonDown){
             if(this.canSlash){
-                this.slashRender.color = new Color(1f,1f,1f,1f);
+                Instantiate(this.slashOrigin, this.targetPos, Quaternion.identity);
                 this.nowDelayTime = 0;
                 this.nowDelay = true;
                 this.canSlash = false;

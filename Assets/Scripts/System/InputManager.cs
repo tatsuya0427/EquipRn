@@ -6,8 +6,8 @@ public class InputManager : MonoBehaviour{
 
     [SerializeField]protected GameObject player;//playerを格納して、PlayerControllerを扱う。
     [SerializeField]protected string jumpKeyName = "Jump";//JumpKeyにて使用するキーの名称(Jumpならスペースキー)
-    //[SerializeField]protected List<GameObject> actions = new List<GameObject>();
-    [SerializeField]protected List<ActionUI> actions = new List<ActionUI>();
+    [SerializeField]protected List<ActionUI> actions = new List<ActionUI>();//装備していactionをlistで管理する
+    [SerializeField]protected List<GameObject> actionIcons = new List<GameObject>();//actionごとに表示するアイコンを管理する
 
     
     //private List<ActinonUI> actionComp = new List<ActionUI>();
@@ -35,6 +35,8 @@ public class InputManager : MonoBehaviour{
     
     private ActionUI actionUIComp;//現在装備しているActionUIのコンポーネントを格納しておく
 
+    private MoveActionIcon moveActionIconComp;//装備しているActionに対応したUIのコンポーネントを格納しておく。
+
     private int refActionNomber = 0;//list内から、現在装備しているActionUIの番号を格納する
 
     private float axisH = 0;//左右の入力値を保存しておく
@@ -51,6 +53,7 @@ public class InputManager : MonoBehaviour{
     private bool CanUseJumpKey = false;
     //-----------------
 
+    //現在入力を受け付けるかどうかの判定を行う変数
     private bool canPlayerControl = false;
     public bool EditCanPlayerControl
     {
@@ -64,18 +67,16 @@ public class InputManager : MonoBehaviour{
         }
     }
 
-    void Start(){
-        //this.actionUIComp = this.actions[0].GetCompomemt<ActionUI>();
-        this.refActionNomber = 0;
+    void Start(){//playerの初期装備に合わせてプレイヤーとボタン設定の設定を行う。
+        this.refActionNomber = 0;//初期装備としてactionsの0番目を取得する。
         this.canPlayerControl = false;
-        //CreateAction();
-        for(int i = 0; i < this.actions.Count; i++){
-            Debug.Log(this.actions[i].GetName());
-        }
         //-----------------
         //最初に装備しているActionUIのsetPlayerの実行と、このActionUIに設定されているCanUse(...)Keyの設定を取得する
         this.playerComp = player.GetComponent<PlayerController>();
         this.actionUIComp = this.actions[this.refActionNomber];
+
+        this.moveActionIconComp = this.actionIcons[this.refActionNomber].GetComponent<MoveActionIcon>();
+        this.moveActionIconComp.Set();//画面上に現在装備しているアイコンを表示する
 
         this.actionUIComp.PlayerSet(player);
         this.CanUseUpKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.UP);
@@ -85,6 +86,7 @@ public class InputManager : MonoBehaviour{
         this.CanUseJumpKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.JUMP);
         //-----------------
 
+        //playerに現在の装備クラスを代入する
         this.playerComp.SetUp(this.actionUIComp);
 
         //-----------------ボタンの表示変更
@@ -105,83 +107,102 @@ public class InputManager : MonoBehaviour{
         //-----------------
     }
 
-    void SetAction(ActionUI nextSetAction){
+    void SetAction(ActionUI nextSetAction){//playerが装備するものに合わせてプレイヤーとボタン設定の設定を行う。
         Debug.Log(nextSetAction.GetName());
         //this.actionUIComp = nextSetAction.GetComponent<ActionUI>();
-        this.actionUIComp.Remove();
+        this.actionUIComp.Remove();//現在装備している装備を外す際の処理を実行する
         this.actionUIComp = nextSetAction;
 
+        this.moveActionIconComp.Remove();//画面上に現在装備しているアイコンを外に移動する
+        this.moveActionIconComp = this.actionIcons[this.refActionNomber].GetComponent<MoveActionIcon>();
+        this.moveActionIconComp.Set();//画面上に現在装備しているアイコンを表示する
+
+        //装備しているActionUIのsetPlayerの実行と、このActionUIに設定されているCanUse(...)Keyの設定を取得する
         this.actionUIComp.PlayerSet(player);
         this.CanUseUpKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.UP);
         this.CanUseDownKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.DOWN);
         this.CanUseLeftKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.LEFT);
         this.CanUseRightKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.RIGHT);
         this.CanUseJumpKey = this.actionUIComp.GetCanPush(ActionUI.ActionKey.JUMP);
+        //-----------------
 
-        //this.playerComp = player.GetComponent<PlayerController>();
+        //playerに現在の装備クラスを代入する
+        this.playerComp.ChangeAction(this.actionUIComp);
+
+        //-----------------ボタンの表示変更
         this.buttonUpComp.ChangeState(this.CanUseUpKey);
         this.buttonDownComp.ChangeState(this.CanUseDownKey);
         this.buttonRightComp.ChangeState(this.CanUseRightKey);
         this.buttonLeftComp.ChangeState(this.CanUseLeftKey);
         this.buttonJumpComp.ChangeState(this.CanUseJumpKey);
-
-        this.playerComp.ChangeAction(this.actionUIComp);
-
-
+        //-----------------
     }
 
-    void Update(){
-        if(this.canPlayerControl){
-            if(this.CanUseRightKey || this.CanUseLeftKey){
+    void Update()
+    {
+        if(this.canPlayerControl)//各キーの入力処理を管理する。
+        {
+            if(this.CanUseRightKey || this.CanUseLeftKey)
+            {
                 this.axisH = Input.GetAxisRaw("Horizontal");
 
                 //playerComp.EditAxisH = this.axisH;
 
-                if(this.axisH > 0 && this.CanUseRightKey){
-                    this.playerComp.InputRight(true);
-                    this.playerComp.InputLeft(false);
+                if(this.axisH > 0 && this.CanUseRightKey)
+                {
+                    this.playerComp.InputRight(true);//右キーを押した際の処理を起動
+                    this.playerComp.InputLeft(false);//左キーの処理を中断
 
-                    this.buttonRightComp.PushKey(true);
-                    this.buttonLeftComp.PushKey(false);
+                    this.buttonRightComp.PushKey(true);//右キーを押した際のUIの変更
+                    this.buttonLeftComp.PushKey(false);//左キーのUIをリセット
 
-                }else if(this.axisH < 0 && this.CanUseLeftKey){
+                }
+                else if(this.axisH < 0 && this.CanUseLeftKey)
+                {
                     this.playerComp.InputRight(false);
                     this.playerComp.InputLeft(true);
 
                     this.buttonRightComp.PushKey(false);
                     this.buttonLeftComp.PushKey(true);
 
-                }else{
+                }
+                else
+                {
                     this.playerComp.InputRight(false);
                     this.playerComp.InputLeft(false);
 
                     this.buttonRightComp.PushKey(false);
                     this.buttonLeftComp.PushKey(false);
 
-                    playerComp.EditAxisH = this.axisH;
-                    
+                    playerComp.EditAxisH = this.axisH;    
                 }
             }
 
-            if(this.CanUseUpKey || this.CanUseDownKey){
+            if(this.CanUseUpKey || this.CanUseDownKey)
+            {
                 this.axisV = Input.GetAxisRaw("Vertical");
                 //playerComp.EditAxisV = this.axisV;
 
-                if(this.axisV > 0 && this.CanUseUpKey){
-                    this.playerComp.InputUp(true);
-                    this.playerComp.InputDown(false);
+                if(this.axisV > 0 && this.CanUseUpKey)
+                {
+                    this.playerComp.InputUp(true);//上キーを押した際の処理を起動
+                    this.playerComp.InputDown(false);//下キーの処理を中断
 
-                    this.buttonUpComp.PushKey(true);
-                    this.buttonDownComp.PushKey(false);
+                    this.buttonUpComp.PushKey(true);//上キーを押した際のUIの変更
+                    this.buttonDownComp.PushKey(false);//下キーのUIをリセット
 
-                }else if(this.axisV < 0 && this.CanUseDownKey){
+                }
+                else if(this.axisV < 0 && this.CanUseDownKey)
+                {
                     this.playerComp.InputUp(false);
                     this.playerComp.InputDown(true);
 
                     this.buttonUpComp.PushKey(false);
                     this.buttonDownComp.PushKey(true);
 
-                }else{
+                }
+                else
+                {
                     this.playerComp.InputUp(false);
                     this.playerComp.InputDown(false);
 
@@ -192,27 +213,26 @@ public class InputManager : MonoBehaviour{
                 }
             }
 
-            if(this.CanUseJumpKey){
-                this.playerComp.InputJump(Input.GetButtonDown(jumpKeyName));
-                this.buttonJumpComp.PushKey(Input.GetButton(jumpKeyName));
+            if(this.CanUseJumpKey)
+            {
+                this.playerComp.InputJump(Input.GetButtonDown(jumpKeyName));//Jumpキーを押した時の処理を起動
+                this.buttonJumpComp.PushKey(Input.GetButton(jumpKeyName));//Jumpキーを押した際のUIの変更
             }
 
-            if(Input.GetKeyDown(KeyCode.C)){
-                // Debug.Log("this.refActionNomber" + this.refActionNomber);
-                // Debug.Log("actions.Count" + actions.Count);s
-
-                if(this.refActionNomber + 1 < actions.Count){
+            if(Input.GetKeyDown(KeyCode.C))//actionsに格納されているもの
+            {
+                if(this.refActionNomber + 1 < actions.Count)
+                {
                     this.refActionNomber ++;
                     Debug.Log("next:" + this.refActionNomber);
-                    //Debug.Log(actions[this.refActionNomber].GetName());
-                    SetAction(actions[this.refActionNomber]);
-
-                }else{
+                }
+                else
+                {
                     Debug.Log("return");
-                    //Debug.Log(actions[this.refActionNomber].GetName());
-                    SetAction(actions[0]);
                     this.refActionNomber = 0;
                 }
+
+                SetAction(actions[this.refActionNomber]);
             }
         }
     }

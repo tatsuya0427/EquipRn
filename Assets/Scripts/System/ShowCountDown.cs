@@ -13,38 +13,30 @@ public class ShowCountDown : MonoBehaviour {
 	private int seconds;
     private bool countStart = false;
 
-    public void setUp()
-    {
+    public void setUp(){
         nowTime = totalTime;
         countStart = true;
         timerText.text= ("ready...");
     }
 
-	void Update () 
-    {
+	void Update () {
         if(countStart)
         {
             nowTime -= Time.deltaTime;
             seconds = (int)nowTime;
-            if(seconds <= 0)
-            {
+            if(seconds <= 0){
                 timerText.text= ("start!!");
                 countStart = false;
                 this.mainGameSceneManager.GetComponent<MainGameSceneManager>().CountZero();
-                //InputManagerでplayerが操作できるようにする
                 Invoke("DelayErase", 1.0f);
                 
-            }
-            else
-            {
+            }else{
                 timerText.text= seconds.ToString();
             }
         }
-
 	}
 
-    void DelayErase()
-    {
+    void DelayErase(){
         timerText.text = "";
     }
 }

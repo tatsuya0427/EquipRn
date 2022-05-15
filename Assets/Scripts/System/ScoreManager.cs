@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ScoreManager : MonoBehaviour
-{
+public class ScoreManager : MonoBehaviour{
 
     [SerializeField]protected GameObject inputManager;
     public static ScoreManager instance = null;
 
 
     //----------------score関係    
-    public int score;
+    public static int score;
     public int highScore;
     //----------------
     
     public int EditScore{
         set{
-            this.score += value;
+            score += value;
         }get{
-            return this.score;
+            return score;
         }
     }
 
@@ -32,15 +31,11 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        if(instance == null)
-        {
+    private void Awake(){
+        if(instance == null){
             instance = this;
             DontDestroyOnLoad(this.gameObject);
-        }
-        else
-        {
+        }else{
             Destroy(this.gameObject);
         }
     }
