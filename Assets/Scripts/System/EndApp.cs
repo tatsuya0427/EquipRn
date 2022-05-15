@@ -1,0 +1,11 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EndApp : MonoBehaviour{
+    void Update() {
+       if (Input.GetKey(KeyCode.Escape)){
+            Application.Quit();
+        }
+    }
+}

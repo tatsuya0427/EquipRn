@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class PlayerController : MonoBehaviour{
 
@@ -11,7 +12,7 @@ public class PlayerController : MonoBehaviour{
 	[SerializeField]protected float defaultSpeed = 0;
 	
 	
-	[SerializeField]Transform[] groundCheckTransforms = null;
+	[SerializeField]Transform[] groundCheckTransforms = null;//地面への設置判定を行うobjectを格納するlist
 
 	[SerializeField]protected int defaultPower = 0;
 
@@ -19,17 +20,16 @@ public class PlayerController : MonoBehaviour{
 	
 	//--------------------
 	//playerが現在装備しているActionについて格納しておく変数群
-	private ActionUI nowSetAction;//現在装備している操作方法
+	private ActionUI nowSetAction;//現在装備しているactionの操作方法
 	//--------------------
 
 	//--------------------
 	//ジャンプの処理に使用する変数群
-	//[SerializeField]protected string jumpKeyName = "Jump";
 	[SerializeField]protected float jumpPower = 10.0f;
 	[SerializeField]protected float secondJumpPower = 10.0f;
 
 	[SerializeField]int canJumpCount = 2;//地面についてからジャンプできる最大回数
-	[SerializeField]bool isGround = false;
+	[SerializeField]bool isGround = false;//現在接地しているかどうか
 	[SerializeField]int remJumpCount = 0;//残り何回ジャンプできるか
 	//--------------------
 
@@ -56,128 +56,153 @@ public class PlayerController : MonoBehaviour{
 	protected float damageFlash;//被弾時の点滅処理で使用するalpha値
 	//--------------------
 
-	[SerializeField]GameObject SceneManager;//シーンの操作を行うObjectを格納しておく変数
-
 	protected Animator anim;
 	protected SpriteRenderer srender;
 	protected Rigidbody2D rbody;
 
-	public int EditHp{
-		set{
+	public int EditHp
+	{
+		set
+		{
 			hp = Mathf.Clamp(hp - value, 0, maxHP);
-			if(hp <= 0){
-				Dead();
+			if(hp <= 0)
+			{
+				Dead();//死亡判定
 			}
 
-		}get{
+		}
+		get
+		{
 			return hp;
 		}
 	}
 
-	public float EditSpeed{
-		set{
+	public float EditSpeed
+	{
+		set
+		{
 			speed = value;
-		}get{
+		}
+		get
+		{
 			return speed;
 		}
 	}
 
-	public int EditPower{
-		set{
+	public int EditPower
+	{
+		set
+		{
 			power = Mathf.Max(value, 0);
-		}get{
+		}
+		get
+		{
 			return power;
 		}
 	}
 
-	public float EditJumpPower{
-		set{
+	public float EditJumpPower
+	{
+		set
+		{
 			this.jumpPower = value;
-		}get{
+		}
+		get
+		{
 			return this.jumpPower;
 		}
 	}
 
-	public float EditSecondJumpPower{
-		set{
+	public float EditSecondJumpPower
+	{
+		set
+		{
 			this.secondJumpPower = value;
-		}get{
+		}
+		get
+		{
 			return this.secondJumpPower;
 		}
 	}
 
-	public float EditAxisH{
-		set{
+	public float EditAxisH
+	{
+		set
+		{
 			this.axisH = value;
-		}get{
+		}
+		get
+		{
 			return this.axisH;
 		}
 	}
 
-	public float EditAxisV{
-		set{
+	public float EditAxisV
+	{
+		set
+		{
 			this.axisV = value;
-		}get{
+		}
+		get
+		{
 			return this.axisV;
 		}
 	}
 
-	public bool GetIsGround{
-		get{
+	public bool GetIsGround
+	{
+		get
+		{
 			return this.isGround;
 		}
 	}
 
-	public int EditRemJumpCount{
-		set{
+	public int EditRemJumpCount
+	{
+		set
+		{
 			remJumpCount = value;
-		}get{
+		}
+		get
+		{
 			return this.remJumpCount;
 		}
 	}
 
-	public int EditCanJumpCount{
-		set{
+	public int EditCanJumpCount
+	{
+		set
+		{
 			this.canJumpCount = value;
-		}get{
+		}
+		get
+		{
 			return this.canJumpCount;
 		}
 	}
 
-	public Rigidbody2D GetRbody{
-		get{
+	public Rigidbody2D GetRbody
+	{
+		get
+		{
 			return this.rbody;
 		}
 	}
 
-	public ActionUI EditNowSetAction{
-		set{
+	public ActionUI EditNowSetAction
+	{
+		set
+		{
 			this.nowSetAction = value;
-		}get{
+		}
+		get
+		{
 			return this.nowSetAction;
 		}
 	}
 
-    protected virtual void Start(){
-		// srender = GetComponent<SpriteRenderer>();
-		// Debug.Log(srender);
-		// if(srender != null){
-		// 	Damage();
-		// }
-
-
-		//
-		//gameManagerObj = GameObject.FindGameObjectWithTag("GameController");
-		//gameManager = gameManagerObj.GetComponent<GameManager>();
-
-		// anim = GetComponent<Animator>();
-		// srender = GetComponent<SpriteRenderer>();
-		// rbody = GetComponent<Rigidbody2D>();
-
-		// InitCharacter();
-    }
-
-	public void SetUp(ActionUI firstSetAction){
+	public void SetUp(ActionUI firstSetAction)//初期設定
+	{
 		ChangeAction(firstSetAction);
 
 		anim = GetComponent<Animator>();
@@ -185,127 +210,92 @@ public class PlayerController : MonoBehaviour{
 		Debug.Log(srender);
 		rbody = GetComponent<Rigidbody2D>();
 
-		//Damage();
-
-		InitCharacter();
+		InitCharacter();//Playerのステータスを初期設定に戻す機構
 	}
 
-	public void ChangeAction(ActionUI targetAction){
+	public void ChangeAction(ActionUI targetAction)//装備しているActionUIclassの変更
+	{
 		EditNowSetAction = targetAction;
+		this.axisH = 0;
 	}
 
-    protected virtual void Update(){
-        //GetInput();
-		//UpdateAnimation();
-		DamageTimer();
+    protected virtual void Update()
+	{
+		DamageTimer();//被弾時の無敵時間や入力受付制限の制御
     }
 
-	protected virtual void FixedUpdate(){
-		FixedUpdateCharacter();
-		DamageAnimation();
-		if(this.nowSetAction != null){
+	protected virtual void FixedUpdate()
+	{
+		FixedUpdateCharacter();//playerの描画に関する関数
+		DamageAnimation();//ダメージを受けた際の点滅処理
+		if(this.nowSetAction != null)
+		{
 			this.nowSetAction.ActionsUpdate();
 		}
 	}
 
-	protected virtual void FixedUpdateCharacter(){
-		Move();
+	protected virtual void FixedUpdateCharacter()//playerの描画に関する関数
+	{
+		Move();//playerの動きに関して
 	}
 
-	// void GetInput(){
-	// 	if(!isActive){
-	// 		return;
-	// 	}
-
-	// 	// this.nowPushJumpKey = Input.GetButtonDown(GetJumpKeyName);
-	// 	// this.axisH = Input.GetAxisRaw("Horizontal");
-	// 	// this.axisV = Input.GetAxisRaw("Vertical");
-
-	// 	// if(this.nowPushJumpKey){
-			
-	// 	// }
-
-
-	// 	// this.nowPushUpKey = GetInput.GetButtonDown();
-
-	// 	// if()
-
-	// 	//-------------
-	// 	// nowPushJumpKey = Input.GetButtonDown(jumpKeyName);
-	// 	// if(nowPushJumpKey){
-	// 	// 	if(keepPushJumpKey == false){
-	// 	// 		keepPushJumpKey = true;
-	// 	// 		remJumpCount --;
-	// 	// 		//Debug.Log("hoge");
-	// 	// 	}
-	// 	// }else{
-	// 	// 	keepPushJumpKey = false;
-	// 	// }
-	// 	//-------------
-	
-	// 	// nowPushSpace = Input.GetButtonDown(jumpButtonName);
-	// 	// if(nowPushSpace){
-	// 	// 	if(pushSpaceKeyFlag == false){
-	// 	// 		pushSpaceKeyFlag = true;
-	// 	// 	}
-	// 	// }else{
-	// 	// 	pushSpaceKeyFlag = false;
-	// 	// }
-
-	// 	// axisH = Input.GetAxisRaw("Horizontal");
-    //     // if(axisH > 0){
-    //     //     transform.localScale = new Vector3(-0.4f, 0.4f, 1.0f);
-    //     // }else if(axisH < 0){
-    //     //     transform.localScale = new Vector3(0.4f, 0.4f, 1.0f);
-    //     // }
-
-
-	// }
-
-	public void InputUp(bool inputGetButtonDown){
-		if(!isActive || notMoveFlag){
+	public void InputUp(bool inputGetButtonDown)
+	{
+		if(!isActive || notMoveFlag)
+		{
 			return;
 		}
 		this.nowSetAction.PushUp(inputGetButtonDown);
 	}
 
-	public void InputDown(bool inputGetButtonDown){
-		if(!isActive || notMoveFlag){
+	public void InputDown(bool inputGetButtonDown)
+	{
+		if(!isActive || notMoveFlag)
+		{
 			return;
 		}
 		this.nowSetAction.PushDown(inputGetButtonDown);
 	}
 
-	public void InputLeft(bool inputGetButtonDown){
-		if(!isActive || notMoveFlag){
+	public void InputLeft(bool inputGetButtonDown)
+	{
+		if(!isActive || notMoveFlag)
+		{
 			return;
 		}
 		this.nowSetAction.PushLeft(inputGetButtonDown);
 	}
 
-	public void InputRight(bool inputGetButtonDown){
-		if(!isActive || notMoveFlag){
+	public void InputRight(bool inputGetButtonDown)
+	{
+		if(!isActive || notMoveFlag)
+		{
 			return;
 		}
 		this.nowSetAction.PushRight(inputGetButtonDown);
 	}
 
-	public void InputJump(bool inputGetButtonDown){
-		if(!isActive || notMoveFlag){
+	public void InputJump(bool inputGetButtonDown)
+	{
+		if(!isActive || notMoveFlag)
+		{
 			return;
 		}
 		this.nowSetAction.PushJump(inputGetButtonDown);
 	}
 
-	protected virtual void InitCharacter(){
+	protected virtual void InitCharacter()//Playerのステータスを初期設定に戻す
+	{
 		this.hp = maxHP;
 		EditSpeed = defaultSpeed;
-		Debug.Log("active");
+		//Debug.Log("active");
 		isActive = true;
 	}
 
-	protected virtual void Move(){
-		if(!isActive){
+	protected virtual void Move()
+	{
+		if(!isActive)
+		{
 			return;
 		}
 		GroundCheck();//接地判定
@@ -314,19 +304,20 @@ public class PlayerController : MonoBehaviour{
 		rbody.velocity = new Vector2(speed * axisH, rbody.velocity.y);
 	}
 
-	void GroundCheck(){
+	void GroundCheck()//playerの接地判定
+	{
 		Collider2D[] groundCheckCollider = new Collider2D[groundCheckTransforms.Length];
 		
 		//接地判定オブジェクトが何かに重なっているかどうかをチェック
-		for (int i = 0; i < groundCheckTransforms.Length; i++){
+		for (int i = 0; i < groundCheckTransforms.Length; i++)
+		{
 			groundCheckCollider[i] = Physics2D.OverlapPoint(groundCheckTransforms[i].position);
 
 			//接地判定オブジェクトのうち、1つでも何かに重なっていたら接地しているものとして終了
-			if (groundCheckCollider[i] != null){
+			if (groundCheckCollider[i] != null)
+			{
 				isGround = true;
 				remJumpCount = canJumpCount;
-				//jump = true;
-				//canSecondJump = true;
 				return;
 			}
 		}
@@ -334,15 +325,19 @@ public class PlayerController : MonoBehaviour{
 		isGround = false;
   	}
 
-	protected void OnCollisionEnter2D(Collision2D collision){
-		if(collision.gameObject.CompareTag("enemy")){
+	protected void OnCollisionEnter2D(Collision2D collision)//敵との当たり判定制御
+	{
+		if(collision.gameObject.CompareTag("enemy"))
+		{
 			Damage(collision.collider.transform.position);
 			this.EditAxisH = 0;
 		}
 	}
 
-	protected virtual void Damage(Vector3 damagePos){
-		if(this.damageFlag){
+	protected virtual void Damage(Vector3 damagePos)//ダメージを受けた際の数値処理やノックバック処理
+	{
+		if(this.damageFlag)
+		{
 			return;
 		}
 
@@ -350,65 +345,53 @@ public class PlayerController : MonoBehaviour{
 		damageFlag = true;
 		notMoveFlag = true;
 
-
-		// Vector2 damageForced;
-        // if(transform.position.x < positionX){//敵がplayerからみて前方、後方どちらから攻撃してきたか判別し、playerが攻撃された方とは逆向きに吹っ飛ばす処理
-        //     //forced = Vector2.left;
-			
-		// 	//this.rbody.AddForce(transform.up * 600.0f);
-		// 	damageForced = new Vector2(-30.0f, 10.0f);
-		// 	//this.rbody.AddForce(transform.right * -600.0f);
-		// 	this.rbody.AddForce(damageForced, ForceMode2D.Impulse);
-
-        // }else{
-        //     //forced = Vector2.right;
-		// 	//this.rbody.AddForce(transform.right * 600.0f);
-		// 	//this.rbody.AddForce(transform.up * 600.0f);
-		// 	damageForced = new Vector2(30.0f, 10.0f);
-		// 	this.rbody.AddForce(damageForced, ForceMode2D.Impulse);
-
-        // }
-        //this.rbody.velocity = forced * 300;
-		//this.rbody.velocity = Vector2.up * 50;
-
-		Vector2 damageForce = new Vector2(15f, 10f);
+		Vector2 damageForce;
 		Vector2 distination = (transform.position - damagePos).normalized;
+
+		//playerとenemyの位置関係からどちらの方向へ吹っ飛ぶか判断する制御
 		if(distination.x < 0)
 		{
-			damageForce.x *= -1f;
+			damageForce = new Vector2(-3f, 1.5f);
+			
 		}
-		// distination.x *= 20f;
-		// distination.y *= 30f;
-		this.rbody.AddForce(damageForce, ForceMode2D.Impulse);
-		// this.rbody.AddForce(transform.right * distination.x, ForceMode2D.Impulse);
-		// this.rbody.AddForce(transform.up * distination.y, ForceMode2D.Impulse);
-		//transform.Translate(distination.x * 5, distination.y * 5, 0);
+		else
+		{
+			damageForce = new Vector2(3f, 1.5f);
+		}
+		transform.DOMove(damageForce, 0.3f);
+		//transform.position = Vector2.MoveTowards(transform.position, damageForce, 2.0f*Time.deltaTime);
 
-		if(EditHp > 0){
+		if(EditHp > 0)
+		{
 			this.nowDamageCoolTime = 0;
 		}
-
-		//playerComp.GetRbody.velocity = Vector3.up * playerComp.EditJumpPower;//ジャンプ量の作成
 	}
 
-	protected virtual void DamageTimer(){
-		if(this.nowDamageCoolTime >= this.damageCoolTime){
+	protected virtual void DamageTimer()//被弾時の無敵時間や入力受付制限の制御
+	{
+		if(this.nowDamageCoolTime >= this.damageCoolTime)
+		{
 			this.damageFlag = false;
 			this.notMoveFlag = false;
-		}else if(this.nowDamageCoolTime >= this.damageCoolTime / 2){
+		}
+		else if(this.nowDamageCoolTime >= this.damageCoolTime / 2)
+		{
 			this.notMoveFlag = false;
 		}
 
-		if(this.nowDamageCoolTime < this.damageCoolTime){
+		if(this.nowDamageCoolTime < this.damageCoolTime)
+		{
 			this.nowDamageCoolTime += Time.deltaTime;
 		}
 	}
 
-	protected virtual void Dead(){
+	protected virtual void Dead()//playerが死亡した際の処理
+	{
 		Debug.Log("Dead!!!!!!");
 		if(this.mainGameSceneManager != null)
 		{
-			this.mainGameSceneManager.GetComponent<MainGameSceneManager>().EditPlayerLive = false;
+			this.notMoveFlag = false;
+			this.mainGameSceneManager.GetComponent<MainGameSceneManager>().GameOver();
 		}
 		else
 		{
@@ -416,16 +399,21 @@ public class PlayerController : MonoBehaviour{
 		}
 	}
 
-	void UpdateAnimation(){
+	void UpdateAnimation()
+	{
 		//anim.SetBool("Grounded", isGround);
 	}
 
-	protected void DamageAnimation(){
-		if(this.damageFlag){
+	protected void DamageAnimation()//ダメージを受けた際の点滅処理
+	{
+		if(this.damageFlag)
+		{
 			this.damageFlash = Mathf.Abs(Mathf.Sin(Time.time * 10));
 			damageColor = new Color(1f, 1f, 1f, this.damageFlash);
 			srender.color = damageColor;
-		}else{
+		}
+		else
+		{
 			srender.color = new Color(1f, 1f, 1f, 1f);
 		}
 	}

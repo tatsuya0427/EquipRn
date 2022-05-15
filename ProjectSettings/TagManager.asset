@@ -6,6 +6,9 @@ TagManager:
   tags:
   - ground
   - enemy
+  - playerAttack
+  - outer
+  - Overlap
   layers:
   - Default
   - TransparentFX
@@ -17,11 +20,11 @@ TagManager:
   - 
   - ground
   - SelectableInversion
-  - 
-  - 
-  - 
-  - 
-  - 
+  - playerAttack
+  - player
+  - enemy
+  - item
+  - overlapRange
   - 
   - 
   - 

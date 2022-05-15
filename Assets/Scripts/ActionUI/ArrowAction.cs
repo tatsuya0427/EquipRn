@@ -15,6 +15,8 @@ public class ArrowAction : ActionUI{
     private bool canShot = true;//現在arrowが打てるかどうか
     private float nowDelayTime = 0f;//現在のdelay経過時間を保持しておく
 
+    private MoveActionIcon iconComp;
+
 
     //------------------------
     private bool upFlag = false;//trueの間、targetが斜め上を向く
@@ -28,10 +30,6 @@ public class ArrowAction : ActionUI{
     [SerializeField]protected float arrowSpeed　= 5.0f;//arrowの速度を保持する変数
     [SerializeField]protected float shotDelay = 0f;//arrowを打った後に再度打てるようになるまでの感覚
 
-
-    // void Start(){
-    //     SetState("arrow", true, true, true, true, true);
-    // }
 
     public override void PlayerSet(GameObject player){
         SetState("arrow", true, true, true, true, true);
@@ -139,12 +137,6 @@ public class ArrowAction : ActionUI{
                 this.canShot = false;
                 this.nowDelayTime = 0;
             }
-            //GameObject cloneArrow = Instantiate(this.arrow, this.playerObject.transform.position, Quaternion.identity);
-            //GameObject cloneArrow = Instantiate(this.arrow);
-            //cloneArrow.transform.LookAt(this.moveTarget.transform);
-            
-            //cloneArrow.GetComponent<Rigidbody2D>().velocity = this.arrowVec * this.arrowSpeed;
         }
-    //Instantiate(this.arrow, this.playerObject.transform.position, this.playerObject.rotation);
     }
 }

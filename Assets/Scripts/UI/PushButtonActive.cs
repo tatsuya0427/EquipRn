@@ -12,7 +12,7 @@ public class PushButtonActive : MonoBehaviour{
 
     private bool canUse = false;
 
-    public void PushKey(bool nowPush){
+    public void PushKey(bool nowPush){//ボタンを押された際にUIの画像を差し替える。
         if(this.canUse){
             if(nowPush){
                 buttonImage.sprite = pushSprite;
@@ -22,7 +22,7 @@ public class PushButtonActive : MonoBehaviour{
         }
     }
 
-    public void ChangeState(bool use){
+    public void ChangeState(bool use){//現在装備しているactionによって画像を差し替える
         this.canUse = use;
         if(this.canUse){
             buttonImage.sprite = idleSprite;
